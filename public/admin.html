@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Blue Carbon Registry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/public/style.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-xl font-bold text-blue-900">🌊 Blue Carbon Registry</a>
+                    <span class="ml-4 text-sm text-gray-500">Admin Dashboard</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="refreshData" class="text-gray-500 hover:text-gray-700">
+                        <i data-feather="refresh-cw"></i>
+                    </button>
+                    <div id="adminWallet" class="text-sm text-gray-600"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Dashboard Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">NCCR Admin Dashboard</h1>
+            <p class="text-gray-600 mt-2">Monitor and manage blue carbon registry operations</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-blue-100 rounded-lg">
+                        <i data-feather="database" class="text-blue-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Projects</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="totalProjectsAdmin">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-green-100 rounded-lg">
+                        <i data-feather="check-circle" class="text-green-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Verified Projects</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="verifiedProjectsAdmin">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-yellow-100 rounded-lg">
+                        <i data-feather="clock" class="text-yellow-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Pending Verifications</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="pendingVerifications">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-purple-100 rounded-lg">
+                        <i data-feather="users" class="text-purple-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Active Stakeholders</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="activeStakeholdersAdmin">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Tabs -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button id="tab-projects" class="tab-button active py-2 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600">
+                        Project Management
+                    </button>
+                    <button id="tab-stakeholders" class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Stakeholder Management
+                    </button>
+                    <button id="tab-verification" class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Verification Queue
+                    </button>
+                    <button id="tab-analytics" class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Analytics
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Project Management Tab -->
+            <div id="content-projects" class="tab-content p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-medium text-gray-900">Project Registry</h3>
+                    <div class="flex space-x-3">
+                        <button id="exportProjects" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200">
+                            Export Data
+                        </button>
+                        <button id="verifySelectedProjects" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                            Verify Selected
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <input type="checkbox" id="selectAllProjects" class="rounded">
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectsTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Project rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Stakeholder Management Tab -->
+            <div id="content-stakeholders" class="tab-content p-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-medium text-gray-900">Stakeholder Registry</h3>
+                    <button id="approveSelectedStakeholders" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        Approve Selected
+                    </button>
+                </div>
+
+                <div class="grid gap-6" id="stakeholdersList">
+                    <!-- Stakeholder cards will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Verification Queue Tab -->
+            <div id="content-verification" class="tab-content p-6 hidden">
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-900">Verification Queue</h3>
+                    <p class="text-sm text-gray-600 mt-1">Review and verify carbon credit projects and MRV data</p>
+                </div>
+
+                <div class="space-y-6" id="verificationQueue">
+                    <!-- Verification items will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="content-analytics" class="tab-content p-6 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">Project Distribution by Ecosystem</h4>
+                        <canvas id="ecosystemChart" width="400" height="200"></canvas>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">Monthly Project Registrations</h4>
+                        <canvas id="registrationChart" width="400" height="200"></canvas>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">Carbon Sequestration Progress</h4>
+                        <canvas id="carbonChart" width="400" height="200"></canvas>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">Stakeholder Types</h4>
+                        <canvas id="stakeholderChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Modal -->
+    <div id="verificationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Project Verification</h3>
+                    <button id="closeVerificationModal" class="text-gray-400 hover:text-gray-600">
+                        <i data-feather="x"></i>
+                    </button>
+                </div>
+                
+                <div id="verificationContent">
+                    <!-- Verification form content will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/utils/web3-config.js"></script>
+    <script>
+        // Global variables
+        let adminWeb3;
+        let adminAccount;
+        let adminRegistryContract;
+
+        // Initialize admin dashboard
+        async function initAdminDashboard() {
+            await initAdminWeb3();
+            setupAdminEventListeners();
+            await loadAdminDashboardData();
+            initializeCharts();
+        }
+
+        // Initialize Web3 for admin
+        async function initAdminWeb3() {
+            if (typeof window.ethereum !== 'undefined') {
+                adminWeb3 = new Web3(window.ethereum);
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    adminAccount = accounts[0];
+                    updateAdminWalletDisplay();
+                } catch (error) {
+                    console.error('Admin wallet connection failed:', error);
+                }
+            }
+        }
+
+        // Update admin wallet display
+        function updateAdminWalletDisplay() {
+            if (adminAccount) {
+                const walletDisplay = document.getElementById('adminWallet');
+                walletDisplay.textContent = `Admin: ${adminAccount.substring(0, 6)}...${adminAccount.substring(38)}`;
+            }
+        }
+
+        // Setup event listeners
+        function setupAdminEventListeners() {
+            // Tab navigation
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    switchTab(e.target.id.replace('tab-', ''));
+                });
+            });
+
+            // Refresh data
+            document.getElementById('refreshData').addEventListener('click', loadAdminDashboardData);
+
+            // Export projects
+            document.getElementById('exportProjects').addEventListener('click', exportProjectsData);
+
+            // Verify selected projects
+            document.getElementById('verifySelectedProjects').addEventListener('click', verifySelectedProjects);
+
+            // Approve selected stakeholders
+            document.getElementById('approveSelectedStakeholders').addEventListener('click', approveSelectedStakeholders);
+
+            // Select all projects checkbox
+            document.getElementById('selectAllProjects').addEventListener('change', toggleAllProjectSelection);
+
+            // Close verification modal
+            document.getElementById('closeVerificationModal').addEventListener('click', closeVerificationModal);
+        }
+
+        // Switch between tabs
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active', 'border-blue-500', 'text-blue-600');
+                button.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            document.getElementById(`tab-${tabName}`).classList.add('active', 'border-blue-500', 'text-blue-600');
+            document.getElementById(`tab-${tabName}`).classList.remove('border-transparent', 'text-gray-500');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+
+            // Load specific data for tab
+            loadTabData(tabName);
+        }
+
+        // Load data for specific tab
+        async function loadTabData(tabName) {
+            switch(tabName) {
+                case 'projects':
+                    await loadProjectsTable();
+                    break;
+                case 'stakeholders':
+                    await loadStakeholdersList();
+                    break;
+                case 'verification':
+                    await loadVerificationQueue();
+                    break;
+                case 'analytics':
+                    updateCharts();
+                    break;
+            }
+        }
+
+        // Load admin dashboard data
+        async function loadAdminDashboardData() {
+            try {
+                // Load statistics from API
+                const response = await fetch('/api/admin/statistics');
+                const stats = await response.json();
+                
+                document.getElementById('totalProjectsAdmin').textContent = stats.totalMobileSubmissions || 0;
+                document.getElementById('verifiedProjectsAdmin').textContent = Math.floor((stats.totalMobileSubmissions || 0) * 0.7);
+                document.getElementById('pendingVerifications').textContent = stats.pendingVerifications || 0;
+                document.getElementById('activeStakeholdersAdmin').textContent = stats.registeredStakeholders || 0;
+
+                // Load current tab data
+                const activeTab = document.querySelector('.tab-button.active').id.replace('tab-', '');
+                await loadTabData(activeTab);
+
+            } catch (error) {
+                console.error('Error loading admin dashboard data:', error);
+                showAdminNotification('Error loading dashboard data', 'error');
+            }
+        }
+
+        // Load projects table
+        async function loadProjectsTable() {
+            const tableBody = document.getElementById('projectsTableBody');
+            tableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4">Loading projects...</td></tr>';
+
+            try {
+                // This would fetch from blockchain or API
+                const projects = await fetchProjects();
+                
+                if (projects.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No projects found</td></tr>';
+                    return;
+                }
+
+                let tableHTML = '';
+                projects.forEach((project, index) => {
+                    tableHTML += `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <input type="checkbox" class="project-checkbox rounded" data-project-id="${project.id}">
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">${project.name}</div>
+                                <div class="text-sm text-gray-500">ID: ${project.id}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${project.location}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${project.area} ha</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(project.status)}">
+                                    ${project.status}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${project.owner}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button onclick="viewProjectDetails('${project.id}')" class="text-blue-600 hover:text-blue-900 mr-3">View</button>
+                                ${project.status === 'pending' ? `<button onclick="verifyProject('${project.id}')" class="text-green-600 hover:text-green-900">Verify</button>` : ''}
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableBody.innerHTML = tableHTML;
+
+            } catch (error) {
+                console.error('Error loading projects table:', error);
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">Error loading projects</td></tr>';
+            }
+        }
+
+        // Fetch projects (mock implementation)
+        async function fetchProjects() {
+            // This would integrate with blockchain contracts
+            return [
+                {
+                    id: '1',
+                    name: 'Sundarbans Mangrove Restoration',
+                    location: 'West Bengal, India',
+                    area: 150,
+                    status: 'verified',
+                    owner: '0x1234...5678'
+                },
+                {
+                    id: '2',
+                    name: 'Kerala Backwater Conservation',
+                    location: 'Kerala, India',
+                    area: 75,
+                    status: 'pending',
+                    owner: '0x2345...6789'
+                }
+            ];
+        }
+
+        // Get status class for styling
+        function getStatusClass(status) {
+            switch(status) {
+                case 'verified': return 'bg-green-100 text-green-800';
+                case 'pending': return 'bg-yellow-100 text-yellow-800';
+                case 'active': return 'bg-blue-100 text-blue-800';
+                case 'suspended': return 'bg-red-100 text-red-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        // Load stakeholders list
+        async function loadStakeholdersList() {
+            const container = document.getElementById('stakeholdersList');
+            container.innerHTML = '<div class="text-center py-4">Loading stakeholders...</div>';
+
+            try {
+                const stakeholders = await fetchStakeholders();
+                
+                if (stakeholders.length === 0) {
+                    container.innerHTML = '<div class="text-center py-4 text-gray-500">No stakeholders found</div>';
+                    return;
+                }
+
+                let stakeholdersHTML = '';
+                stakeholders.forEach(stakeholder => {
+                    stakeholdersHTML += `
+                        <div class="bg-white border rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <input type="checkbox" class="stakeholder-checkbox rounded mr-3" data-stakeholder-id="${stakeholder.id}">
+                                    <div>
+                                        <h4 class="text-lg font-medium text-gray-900">${stakeholder.name}</h4>
+                                        <p class="text-sm text-gray-600">${stakeholder.organization}</p>
+                                        <p class="text-xs text-gray-500">${stakeholder.type} • ${stakeholder.location}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${stakeholder.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                        ${stakeholder.approved ? 'Approved' : 'Pending'}
+                                    </span>
+                                    ${!stakeholder.approved ? `<button onclick="approveStakeholder('${stakeholder.id}')" class="text-blue-600 hover:text-blue-900 text-sm">Approve</button>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = stakeholdersHTML;
+
+            } catch (error) {
+                console.error('Error loading stakeholders:', error);
+                container.innerHTML = '<div class="text-center py-4 text-red-500">Error loading stakeholders</div>';
+            }
+        }
+
+        // Fetch stakeholders (mock implementation)
+        async function fetchStakeholders() {
+            return [
+                {
+                    id: '1',
+                    name: 'Green Earth Foundation',
+                    organization: 'Environmental NGO',
+                    type: 'NGO',
+                    location: 'Mumbai, Maharashtra',
+                    approved: true
+                },
+                {
+                    id: '2',
+                    name: 'Coastal Community Collective',
+                    organization: 'Local Community Group',
+                    type: 'Community',
+                    location: 'Kochi, Kerala',
+                    approved: false
+                }
+            ];
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Ecosystem distribution chart
+            const ecosystemCtx = document.getElementById('ecosystemChart').getContext('2d');
+            window.ecosystemChart = new Chart(ecosystemCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Mangrove', 'Seagrass', 'Salt Marsh', 'Tidal Marsh'],
+                    datasets: [{
+                        data: [45, 25, 20, 10],
+                        backgroundColor: ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Monthly registrations chart
+            const registrationCtx = document.getElementById('registrationChart').getContext('2d');
+            window.registrationChart = new Chart(registrationCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'New Projects',
+                        data: [12, 19, 8, 15, 22, 18],
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Carbon sequestration chart
+            const carbonCtx = document.getElementById('carbonChart').getContext('2d');
+            window.carbonChart = new Chart(carbonCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    datasets: [{
+                        label: 'CO2 Sequestered (tons)',
+                        data: [1250, 1890, 2340, 2100],
+                        backgroundColor: '#10B981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Stakeholder types chart
+            const stakeholderCtx = document.getElementById('stakeholderChart').getContext('2d');
+            window.stakeholderChart = new Chart(stakeholderCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['NGOs', 'Communities', 'Panchayats', 'Researchers', 'Government'],
+                    datasets: [{
+                        data: [35, 30, 15, 12, 8],
+                        backgroundColor: ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Update charts with real data
+        function updateCharts() {
+            // This would fetch real data and update the charts
+            console.log('Updating charts with latest data...');
+        }
+
+        // Admin notification system
+        function showAdminNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transition-all duration-300 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                type === 'warning' ? 'bg-yellow-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                        <i data-feather="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            feather.replace();
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Placeholder functions for admin actions
+        function exportProjectsData() {
+            showAdminNotification('Exporting projects data...', 'info');
+        }
+
+        function verifySelectedProjects() {
+            const selectedProjects = document.querySelectorAll('.project-checkbox:checked');
+            if (selectedProjects.length === 0) {
+                showAdminNotification('Please select projects to verify', 'warning');
+                return;
+            }
+            showAdminNotification(`Verifying ${selectedProjects.length} projects...`, 'info');
+        }
+
+        function approveSelectedStakeholders() {
+            const selectedStakeholders = document.querySelectorAll('.stakeholder-checkbox:checked');
+            if (selectedStakeholders.length === 0) {
+                showAdminNotification('Please select stakeholders to approve', 'warning');
+                return;
+            }
+            showAdminNotification(`Approving ${selectedStakeholders.length} stakeholders...`, 'info');
+        }
+
+        function toggleAllProjectSelection() {
+            const selectAll = document.getElementById('selectAllProjects');
+            const projectCheckboxes = document.querySelectorAll('.project-checkbox');
+            projectCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        }
+
+        function viewProjectDetails(projectId) {
+            showAdminNotification(`Viewing details for project ${projectId}`, 'info');
+        }
+
+        function verifyProject(projectId) {
+            showAdminNotification(`Verifying project ${projectId}...`, 'info');
+        }
+
+        function approveStakeholder(stakeholderId) {
+            showAdminNotification(`Approving stakeholder ${stakeholderId}...`, 'info');
+        }
+
+        function loadVerificationQueue() {
+            const container = document.getElementById('verificationQueue');
+            container.innerHTML = '<div class="text-center py-4 text-gray-500">No items in verification queue</div>';
+        }
+
+        function closeVerificationModal() {
+            document.getElementById('verificationModal').classList.add('hidden');
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initAdminDashboard);
+
+        // Replace feather icons
+        feather.replace();
+    </script>
+</body>
+</html>

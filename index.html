@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue Carbon Registry - Blockchain MRV System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="/public/style.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-green-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-blue-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-blue-900">🌊 Blue Carbon Registry</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="connectWallet" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        Connect Wallet
+                    </button>
+                    <div id="walletAddress" class="text-sm text-gray-600 hidden"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Welcome Section -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+            <div class="text-center mb-8">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Blockchain-Powered Blue Carbon MRV</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    Transparent, verifiable monitoring, reporting, and verification of blue carbon ecosystem restoration 
+                    with tokenized carbon credits on blockchain.
+                </p>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-blue-50 rounded-lg p-6 text-center">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <i data-feather="smartphone" class="text-blue-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Mobile Data Collection</h3>
+                    <p class="text-gray-600 mb-4">Upload field data, photos, and measurements</p>
+                    <a href="/public/mobile.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Start Collection
+                    </a>
+                </div>
+
+                <div class="bg-green-50 rounded-lg p-6 text-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <i data-feather="shield-check" class="text-green-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Verify Projects</h3>
+                    <p class="text-gray-600 mb-4">Review and verify carbon credit projects</p>
+                    <button id="verifyProjects" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        View Projects
+                    </button>
+                </div>
+
+                <div class="bg-purple-50 rounded-lg p-6 text-center">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <i data-feather="settings" class="text-purple-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Admin Dashboard</h3>
+                    <p class="text-gray-600 mb-4">NCCR management and oversight</p>
+                    <a href="/public/admin.html" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                        Admin Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carbon Credits Overview -->
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Carbon Credit Balance</h3>
+                <div class="text-3xl font-bold text-green-600 mb-2" id="creditBalance">0 BCT</div>
+                <p class="text-gray-600">Blue Carbon Tokens owned</p>
+                <button id="mintCredits" class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                    Mint New Credits
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Registry Statistics</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Total Projects:</span>
+                        <span class="font-semibold" id="totalProjects">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Verified Credits:</span>
+                        <span class="font-semibold" id="verifiedCredits">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Active Stakeholders:</span>
+                        <span class="font-semibold" id="activeStakeholders">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Registry -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-gray-900">Project Registry</h3>
+                <button id="addProject" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    + Add Project
+                </button>
+            </div>
+            
+            <div id="projectsList" class="space-y-4">
+                <!-- Projects will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Project Modal -->
+    <div id="addProjectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Add New Project</h3>
+                    <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+                        <i data-feather="x"></i>
+                    </button>
+                </div>
+                
+                <form id="projectForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+                        <input type="text" id="projectName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                        <input type="text" id="projectLocation" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Area (hectares)</label>
+                        <input type="number" id="projectArea" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ecosystem Type</label>
+                        <select id="ecosystemType" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select Ecosystem</option>
+                            <option value="mangrove">Mangrove</option>
+                            <option value="seagrass">Seagrass</option>
+                            <option value="saltmarsh">Salt Marsh</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex space-x-3 pt-4">
+                        <button type="submit" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                            Create Project
+                        </button>
+                        <button type="button" id="cancelModal" class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/utils/web3-config.js"></script>
+    <script src="/app.js"></script>
+    <script>
+        feather.replace();
+    </script>
+</body>
+</html>

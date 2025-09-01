@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Data Collection - Blue Carbon Registry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="/public/style.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Mobile Header -->
+    <header class="bg-blue-600 text-white sticky top-0 z-50">
+        <div class="flex items-center justify-between p-4">
+            <div class="flex items-center space-x-3">
+                <a href="/" class="text-white hover:text-blue-200">
+                    <i data-feather="arrow-left"></i>
+                </a>
+                <h1 class="text-lg font-semibold">Field Data Collection</h1>
+            </div>
+            <button id="syncData" class="text-white hover:text-blue-200">
+                <i data-feather="upload-cloud"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Progress Indicator -->
+    <div class="bg-white border-b">
+        <div class="px-4 py-3">
+            <div class="flex justify-between text-sm text-gray-600 mb-2">
+                <span>Progress</span>
+                <span id="progressText">Step 1 of 5</span>
+            </div>
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill" style="width: 20%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container-mobile py-4">
+        <!-- Step 1: Project Selection -->
+        <div id="step1" class="step-content">
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Select Project</h2>
+                <div class="space-y-3">
+                    <div class="relative">
+                        <select id="projectSelect" class="form-input pr-8 appearance-none bg-white">
+                            <option value="">Choose a project...</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                            <i data-feather="chevron-down" class="w-4 h-4 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <button id="newProjectBtn" class="w-full bg-blue-100 text-blue-700 py-2 px-4 rounded-lg hover:bg-blue-200 transition-colors">
+                        + Create New Project
+                    </button>
+                </div>
+            </div>
+
+            <!-- New Project Form (Hidden by default) -->
+            <div id="newProjectForm" class="bg-white rounded-lg shadow-sm p-6 mb-4 hidden">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">New Project Details</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="form-label">Project Name</label>
+                        <input type="text" id="newProjectName" class="form-input" placeholder="Enter project name">
+                    </div>
+                    <div>
+                        <label class="form-label">Location</label>
+                        <input type="text" id="newProjectLocation" class="form-input" placeholder="Enter location">
+                    </div>
+                    <div>
+                        <label class="form-label">Ecosystem Type</label>
+                        <select id="newProjectEcosystem" class="form-input">
+                            <option value="">Select ecosystem type</option>
+                            <option value="mangrove">Mangrove</option>
+                            <option value="seagrass">Seagrass</option>
+                            <option value="saltmarsh">Salt Marsh</option>
+                            <option value="tidalmarsh">Tidal Marsh</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Area (hectares)</label>
+                        <input type="number" id="newProjectArea" class="form-input" placeholder="Enter area in hectares">
+                    </div>
+                    <div class="flex space-x-3">
+                        <button id="saveNewProject" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700">
+                            Save Project
+                        </button>
+                        <button id="cancelNewProject" class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Location & GPS -->
+        <div id="step2" class="step-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Location Data</h2>
+                
+                <!-- GPS Coordinates -->
+                <div class="space-y-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="font-medium text-gray-700">GPS Coordinates</span>
+                            <button id="getLocation" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                                Get Location
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-sm text-gray-600">Latitude</label>
+                                <input type="text" id="latitude" class="form-input mt-1" readonly>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-600">Longitude</label>
+                                <input type="text" id="longitude" class="form-input mt-1" readonly>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label class="text-sm text-gray-600">Accuracy (meters)</label>
+                            <input type="text" id="accuracy" class="form-input mt-1" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Site Description -->
+                    <div>
+                        <label class="form-label">Site Description</label>
+                        <textarea id="siteDescription" class="form-input" rows="3" placeholder="Describe the collection site..."></textarea>
+                    </div>
+
+                    <!-- Access Notes -->
+                    <div>
+                        <label class="form-label">Access Notes</label>
+                        <textarea id="accessNotes" class="form-input" rows="2" placeholder="How to access this location..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Measurements -->
+        <div id="step3" class="step-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Field Measurements</h2>
+                
+                <div class="space-y-6">
+                    <!-- Vegetation Measurements -->
+                    <div class="border-l-4 border-green-500 pl-4">
+                        <h3 class="font-semibold text-gray-900 mb-3">Vegetation Assessment</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="form-label">Tree Count</label>
+                                <input type="number" id="treeCount" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="form-label">Average Height (m)</label>
+                                <input type="number" id="avgHeight" class="form-input" step="0.1" placeholder="0.0">
+                            </div>
+                            <div>
+                                <label class="form-label">Crown Coverage (%)</label>
+                                <input type="number" id="crownCoverage" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="form-label">Health Score (1-10)</label>
+                                <input type="number" id="healthScore" class="form-input" min="1" max="10" placeholder="5">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Water Quality -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h3 class="font-semibold text-gray-900 mb-3">Water Quality</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="form-label">pH Level</label>
+                                <input type="number" id="phLevel" class="form-input" step="0.1" placeholder="7.0">
+                            </div>
+                            <div>
+                                <label class="form-label">Salinity (ppt)</label>
+                                <input type="number" id="salinity" class="form-input" step="0.1" placeholder="0.0">
+                            </div>
+                            <div>
+                                <label class="form-label">Water Temp (°C)</label>
+                                <input type="number" id="waterTemp" class="form-input" step="0.1" placeholder="25.0">
+                            </div>
+                            <div>
+                                <label class="form-label">Turbidity (NTU)</label>
+                                <input type="number" id="turbidity" class="form-input" step="0.1" placeholder="0.0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Soil Analysis -->
+                    <div class="border-l-4 border-yellow-500 pl-4">
+                        <h3 class="font-semibold text-gray-900 mb-3">Soil Analysis</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="form-label">Organic Carbon (%)</label>
+                                <input type="number" id="organicCarbon" class="form-input" step="0.01" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="form-label">Soil Depth (cm)</label>
+                                <input type="number" id="soilDepth" class="form-input" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="form-label">Bulk Density (g/cm³)</label>
+                                <input type="number" id="bulkDensity" class="form-input" step="0.01" placeholder="1.00">
+                            </div>
+                            <div>
+                                <label class="form-label">Moisture Content (%)</label>
+                                <input type="number" id="moistureContent" class="form-input" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Photos & Documentation -->
+        <div id="step4" class="step-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Photo Documentation</h2>
+                
+                <div class="space-y-6">
+                    <!-- Photo Upload Area -->
+                    <div class="file-upload-area" id="photoUploadArea">
+                        <div class="text-center">
+                            <i data-feather="camera" class="w-12 h-12 text-gray-400 mx-auto mb-3"></i>
+                            <p class="text-gray-600 mb-2">Tap to take photos or upload from gallery</p>
+                            <p class="text-sm text-gray-500">Maximum 10 photos, 5MB each</p>
+                        </div>
+                        <input type="file" id="photoInput" accept="image/*" multiple capture="environment" class="hidden">
+                    </div>
+
+                    <!-- Photo Preview Grid -->
+                    <div id="photoPreview" class="grid grid-cols-2 gap-3 hidden">
+                        <!-- Photo previews will be inserted here -->
+                    </div>
+
+                    <!-- Photo Categories -->
+                    <div>
+                        <label class="form-label">Photo Categories</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded mr-2" value="overview">
+                                <span class="text-sm">Site Overview</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded mr-2" value="vegetation">
+                                <span class="text-sm">Vegetation Close-up</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded mr-2" value="soil">
+                                <span class="text-sm">Soil Conditions</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded mr-2" value="water">
+                                <span class="text-sm">Water Features</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded mr-2" value="damage">
+                                <span class="text-sm">Damage/Issues</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Additional Notes -->
+                    <div>
+                        <label class="form-label">Additional Observations</label>
+                        <textarea id="additionalNotes" class="form-input" rows="4" placeholder="Record any additional observations, wildlife sightings, human impacts, etc..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: Review & Submit -->
+        <div id="step5" class="step-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Review & Submit</h2>
+                
+                <div class="space-y-4">
+                    <!-- Data Summary -->
+                    <div id="dataSummary" class="bg-gray-50 rounded-lg p-4">
+                        <!-- Summary will be populated here -->
+                    </div>
+
+                    <!-- Collector Information -->
+                    <div>
+                        <label class="form-label">Data Collector Name</label>
+                        <input type="text" id="collectorName" class="form-input" placeholder="Enter your name">
+                    </div>
+
+                    <div>
+                        <label class="form-label">Organization</label>
+                        <input type="text" id="collectorOrg" class="form-input" placeholder="Enter your organization">
+                    </div>
+
+                    <div>
+                        <label class="form-label">Contact Information</label>
+                        <input type="email" id="collectorContact" class="form-input" placeholder="Enter email or phone">
+                    </div>
+
+                    <!-- Data Quality Checklist -->
+                    <div class="border rounded-lg p-4">
+                        <h3 class="font-semibold text-gray-900 mb-3">Data Quality Checklist</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded mr-2" id="checkGPS">
+                                <span class="text-sm">GPS coordinates are accurate</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded mr-2" id="checkMeasurements">
+                                <span class="text-sm">All measurements are verified</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded mr-2" id="checkPhotos">
+                                <span class="text-sm">Photos are clear and relevant</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded mr-2" id="checkComplete">
+                                <span class="text-sm">All required fields are completed</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
+            <div class="flex space-x-3">
+                <button id="prevBtn" class="flex-1 bg-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-400 transition-colors hidden">
+                    <i data-feather="arrow-left" class="w-4 h-4 inline mr-2"></i>
+                    Previous
+                </button>
+                <button id="nextBtn" class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                    Next
+                    <i data-feather="arrow-right" class="w-4 h-4 inline ml-2"></i>
+                </button>
+                <button id="submitBtn" class="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors hidden">
+                    <i data-feather="upload" class="w-4 h-4 inline mr-2"></i>
+                    Submit Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offline Indicator -->
+    <div id="offlineIndicator" class="fixed top-16 left-4 right-4 bg-orange-500 text-white p-3 rounded-lg shadow-lg hidden z-40">
+        <div class="flex items-center">
+            <i data-feather="wifi-off" class="w-5 h-5 mr-2"></i>
+            <span>Working offline. Data will be synced when connection is restored.</span>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg p-6 text-center">
+                <div class="spinner mx-auto mb-4"></div>
+                <p class="text-gray-700">Submitting data...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile Data Collection App
+        let currentStep = 1;
+        const totalSteps = 5;
+        let collectedData = {};
+        let selectedPhotos = [];
+
+        // Initialize mobile app
+        function initMobileApp() {
+            setupEventListeners();
+            loadProjects();
+            checkOnlineStatus();
+            updateProgress();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Navigation buttons
+            document.getElementById('nextBtn').addEventListener('click', nextStep);
+            document.getElementById('prevBtn').addEventListener('click', prevStep);
+            document.getElementById('submitBtn').addEventListener('click', submitData);
+
+            // Project selection
+            document.getElementById('newProjectBtn').addEventListener('click', showNewProjectForm);
+            document.getElementById('saveNewProject').addEventListener('click', saveNewProject);
+            document.getElementById('cancelNewProject').addEventListener('click', hideNewProjectForm);
+
+            // Location services
+            document.getElementById('getLocation').addEventListener('click', getCurrentLocation);
+
+            // Photo handling
+            document.getElementById('photoUploadArea').addEventListener('click', () => {
+                document.getElementById('photoInput').click();
+            });
+            document.getElementById('photoInput').addEventListener('change', handlePhotoSelection);
+
+            // Sync button
+            document.getElementById('syncData').addEventListener('click', syncOfflineData);
+
+            // Online/offline events
+            window.addEventListener('online', handleOnline);
+            window.addEventListener('offline', handleOffline);
+        }
+
+        // Load available projects
+        async function loadProjects() {
+            try {
+                const response = await fetch('/api/mobile/projects');
+                const data = await response.json();
+                
+                const projectSelect = document.getElementById('projectSelect');
+                projectSelect.innerHTML = '<option value="">Choose a project...</option>';
+                
+                if (data.projects && data.projects.length > 0) {
+                    data.projects.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = `${project.name} - ${project.location}`;
+                        projectSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                showMobileNotification('Error loading projects. You can create a new project.', 'warning');
+            }
+        }
+
+        // Navigation functions
+        function nextStep() {
+            if (validateCurrentStep()) {
+                if (currentStep < totalSteps) {
+                    hideStep(currentStep);
+                    currentStep++;
+                    showStep(currentStep);
+                    updateProgress();
+                    updateNavigation();
+                }
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                hideStep(currentStep);
+                currentStep--;
+                showStep(currentStep);
+                updateProgress();
+                updateNavigation();
+            }
+        }
+
+        function showStep(step) {
+            document.getElementById(`step${step}`).classList.remove('hidden');
+            
+            // Load step-specific data
+            if (step === 5) {
+                populateDataSummary();
+            }
+        }
+
+        function hideStep(step) {
+            document.getElementById(`step${step}`).classList.add('hidden');
+        }
+
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('progressText').textContent = `Step ${currentStep} of ${totalSteps}`;
+        }
+
+        function updateNavigation() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Show/hide previous button
+            if (currentStep > 1) {
+                prevBtn.classList.remove('hidden');
+            } else {
+                prevBtn.classList.add('hidden');
+            }
+
+            // Show/hide next vs submit button
+            if (currentStep < totalSteps) {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            } else {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            }
+        }
+
+        // Validation functions
+        function validateCurrentStep() {
+            switch (currentStep) {
+                case 1:
+                    return validateProjectSelection();
+                case 2:
+                    return validateLocationData();
+                case 3:
+                    return validateMeasurements();
+                case 4:
+                    return validateDocumentation();
+                case 5:
+                    return validateFinalSubmission();
+                default:
+                    return true;
+            }
+        }
+
+        function validateProjectSelection() {
+            const projectSelect = document.getElementById('projectSelect');
+            if (!projectSelect.value) {
+                showMobileNotification('Please select a project or create a new one', 'warning');
+                return false;
+            }
+            return true;
+        }
+
+        function validateLocationData() {
+            const latitude = document.getElementById('latitude').value;
+            const longitude = document.getElementById('longitude').value;
+            
+            if (!latitude || !longitude) {
+                showMobileNotification('Please get GPS coordinates before proceeding', 'warning');
+                return false;
+            }
+            return true;
+        }
+
+        function validateMeasurements() {
+            // At least some measurements should be provided
+            const treeCount = document.getElementById('treeCount').value;
+            const avgHeight = document.getElementById('avgHeight').value;
+            const organicCarbon = document.getElementById('organicCarbon').value;
+            
+            if (!treeCount && !avgHeight && !organicCarbon) {
+                showMobileNotification('Please provide at least some measurement data', 'warning');
+                return false;
+            }
+            return true;
+        }
+
+        function validateDocumentation() {
+            // Photos are optional but recommended
+            return true;
+        }
+
+        function validateFinalSubmission() {
+            const collectorName = document.getElementById('collectorName').value;
+            const checkboxes = ['checkGPS', 'checkMeasurements', 'checkPhotos', 'checkComplete'];
+            
+            if (!collectorName) {
+                showMobileNotification('Please enter your name', 'warning');
+                return false;
+            }
+
+            const allChecked = checkboxes.every(id => document.getElementById(id).checked);
+            if (!allChecked) {
+                showMobileNotification('Please confirm all quality checks', 'warning');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Project management
+        function showNewProjectForm() {
+            document.getElementById('newProjectForm').classList.remove('hidden');
+        }
+
+        function hideNewProjectForm() {
+            document.getElementById('newProjectForm').classList.add('hidden');
+            // Clear form
+            ['newProjectName', 'newProjectLocation', 'newProjectEcosystem', 'newProjectArea'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+        }
+
+        function saveNewProject() {
+            const name = document.getElementById('newProjectName').value;
+            const location = document.getElementById('newProjectLocation').value;
+            const ecosystem = document.getElementById('newProjectEcosystem').value;
+            const area = document.getElementById('newProjectArea').value;
+
+            if (!name || !location || !ecosystem || !area) {
+                showMobileNotification('Please fill all project fields', 'warning');
+                return;
+            }
+
+            // Create temporary project option
+            const projectSelect = document.getElementById('projectSelect');
+            const option = document.createElement('option');
+            const tempId = 'new_' + Date.now();
+            option.value = tempId;
+            option.textContent = `${name} - ${location} (New)`;
+            option.selected = true;
+            projectSelect.appendChild(option);
+
+            // Store new project data
+            collectedData.newProject = { name, location, ecosystem, area };
+
+            hideNewProjectForm();
+            showMobileNotification('New project created successfully', 'success');
+        }
+
+        // Location services
+        function getCurrentLocation() {
+            if (!navigator.geolocation) {
+                showMobileNotification('Geolocation is not supported by this device', 'error');
+                return;
+            }
+
+            const button = document.getElementById('getLocation');
+            button.innerHTML = '<div class="spinner"></div>';
+            button.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude, accuracy } = position.coords;
+                    
+                    document.getElementById('latitude').value = latitude.toFixed(6);
+                    document.getElementById('longitude').value = longitude.toFixed(6);
+                    document.getElementById('accuracy').value = accuracy.toFixed(1);
+
+                    button.innerHTML = 'Location Updated';
+                    button.disabled = false;
+                    
+                    showMobileNotification('GPS coordinates captured successfully', 'success');
+                },
+                (error) => {
+                    button.innerHTML = 'Get Location';
+                    button.disabled = false;
+                    
+                    let message = 'Failed to get location: ';
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            message += 'Permission denied';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            message += 'Position unavailable';
+                            break;
+                        case error.TIMEOUT:
+                            message += 'Request timeout';
+                            break;
+                        default:
+                            message += 'Unknown error';
+                            break;
+                    }
+                    showMobileNotification(message, 'error');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 60000
+                }
+            );
+        }
+
+        // Photo handling
+        function handlePhotoSelection(event) {
+            const files = Array.from(event.target.files);
+            
+            if (selectedPhotos.length + files.length > 10) {
+                showMobileNotification('Maximum 10 photos allowed', 'warning');
+                return;
+            }
+
+            files.forEach(file => {
+                if (file.size > 5 * 1024 * 1024) {
+                    showMobileNotification(`File ${file.name} is too large (max 5MB)`, 'warning');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    selectedPhotos.push({
+                        file: file,
+                        dataUrl: e.target.result,
+                        name: file.name
+                    });
+                    updatePhotoPreview();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function updatePhotoPreview() {
+            const preview = document.getElementById('photoPreview');
+            
+            if (selectedPhotos.length === 0) {
+                preview.classList.add('hidden');
+                return;
+            }
+
+            preview.classList.remove('hidden');
+            preview.innerHTML = '';
+
+            selectedPhotos.forEach((photo, index) => {
+                const photoDiv = document.createElement('div');
+                photoDiv.className = 'relative';
+                photoDiv.innerHTML = `
+                    <img src="${photo.dataUrl}" class="w-full h-24 object-cover rounded-lg">
+                    <button onclick="removePhoto(${index})" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">
+                        ×
+                    </button>
+                `;
+                preview.appendChild(photoDiv);
+            });
+        }
+
+        function removePhoto(index) {
+            selectedPhotos.splice(index, 1);
+            updatePhotoPreview();
+        }
+
+        // Data summary
+        function populateDataSummary() {
+            const summary = document.getElementById('dataSummary');
+            const projectSelect = document.getElementById('projectSelect');
+            
+            const summaryData = {
+                project: projectSelect.options[projectSelect.selectedIndex].text,
+                location: `${document.getElementById('latitude').value}, ${document.getElementById('longitude').value}`,
+                measurements: {
+                    treeCount: document.getElementById('treeCount').value || 'Not recorded',
+                    avgHeight: document.getElementById('avgHeight').value || 'Not recorded',
+                    organicCarbon: document.getElementById('organicCarbon').value || 'Not recorded'
+                },
+                photos: selectedPhotos.length,
+                notes: document.getElementById('additionalNotes').value || 'None'
+            };
+
+            summary.innerHTML = `
+                <h3 class="font-semibold text-gray-900 mb-3">Data Summary</h3>
+                <div class="space-y-2 text-sm">
+                    <div><strong>Project:</strong> ${summaryData.project}</div>
+                    <div><strong>GPS:</strong> ${summaryData.location}</div>
+                    <div><strong>Tree Count:</strong> ${summaryData.measurements.treeCount}</div>
+                    <div><strong>Avg Height:</strong> ${summaryData.measurements.avgHeight}</div>
+                    <div><strong>Organic Carbon:</strong> ${summaryData.measurements.organicCarbon}</div>
+                    <div><strong>Photos:</strong> ${summaryData.photos}</div>
+                    <div><strong>Notes:</strong> ${summaryData.notes}</div>
+                </div>
+            `;
+        }
+
+        // Data submission
+        async function submitData() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.remove('hidden');
+
+            try {
+                // Collect all form data
+                const formData = new FormData();
+                
+                // Basic project info
+                formData.append('projectId', document.getElementById('projectSelect').value);
+                formData.append('location', document.getElementById('siteDescription').value);
+                formData.append('coordinates', `${document.getElementById('latitude').value},${document.getElementById('longitude').value}`);
+                
+                // Measurements
+                const measurements = {
+                    treeCount: document.getElementById('treeCount').value,
+                    avgHeight: document.getElementById('avgHeight').value,
+                    crownCoverage: document.getElementById('crownCoverage').value,
+                    healthScore: document.getElementById('healthScore').value,
+                    phLevel: document.getElementById('phLevel').value,
+                    salinity: document.getElementById('salinity').value,
+                    waterTemp: document.getElementById('waterTemp').value,
+                    turbidity: document.getElementById('turbidity').value,
+                    organicCarbon: document.getElementById('organicCarbon').value,
+                    soilDepth: document.getElementById('soilDepth').value,
+                    bulkDensity: document.getElementById('bulkDensity').value,
+                    moistureContent: document.getElementById('moistureContent').value
+                };
+                formData.append('measurements', JSON.stringify(measurements));
+                
+                // Observations
+                formData.append('observations', document.getElementById('additionalNotes').value);
+                
+                // Collector info
+                formData.append('collectorId', document.getElementById('collectorName').value);
+                formData.append('collectorOrg', document.getElementById('collectorOrg').value);
+                formData.append('collectorContact', document.getElementById('collectorContact').value);
+                
+                // Photos
+                selectedPhotos.forEach((photo, index) => {
+                    formData.append('photos', photo.file);
+                });
+
+                // New project data if applicable
+                if (collectedData.newProject) {
+                    formData.append('newProject', JSON.stringify(collectedData.newProject));
+                }
+
+                // Submit to server
+                const response = await fetch('/api/mobile/submit-data', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMobileNotification('Data submitted successfully!', 'success');
+                    // Reset form
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    throw new Error(result.error || 'Submission failed');
+                }
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                
+                // Save to local storage for offline sync
+                saveOfflineData();
+                showMobileNotification('Data saved offline. Will sync when connection is restored.', 'warning');
+            } finally {
+                loadingOverlay.classList.add('hidden');
+            }
+        }
+
+        // Offline functionality
+        function saveOfflineData() {
+            const offlineData = JSON.parse(localStorage.getItem('offlineData') || '[]');
+            
+            const dataEntry = {
+                timestamp: new Date().toISOString(),
+                projectId: document.getElementById('projectSelect').value,
+                // ... collect all form data
+                synced: false
+            };
+
+            offlineData.push(dataEntry);
+            localStorage.setItem('offlineData', JSON.stringify(offlineData));
+        }
+
+        function syncOfflineData() {
+            const offlineData = JSON.parse(localStorage.getItem('offlineData') || '[]');
+            const unsyncedData = offlineData.filter(item => !item.synced);
+
+            if (unsyncedData.length === 0) {
+                showMobileNotification('No offline data to sync', 'info');
+                return;
+            }
+
+            showMobileNotification(`Syncing ${unsyncedData.length} offline entries...`, 'info');
+            // Implement sync logic here
+        }
+
+        function checkOnlineStatus() {
+            if (!navigator.onLine) {
+                handleOffline();
+            }
+        }
+
+        function handleOnline() {
+            document.getElementById('offlineIndicator').classList.add('hidden');
+            // Auto-sync offline data
+            syncOfflineData();
+        }
+
+        function handleOffline() {
+            document.getElementById('offlineIndicator').classList.remove('hidden');
+        }
+
+        // Mobile notification system
+        function showMobileNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 left-4 right-4 z-50 p-3 rounded-lg shadow-lg transition-all duration-300 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                type === 'warning' ? 'bg-orange-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="text-sm">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                        ×
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initMobileApp);
+
+        // Replace feather icons
+        feather.replace();
+    </script>
+</body>
+</html>

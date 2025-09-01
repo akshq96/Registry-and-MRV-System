@@ -1,0 +1,316 @@
+/* Custom CSS for Blue Carbon Registry */
+
+/* Animation classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+/* Custom button styles */
+.btn-blue-carbon {
+    background: linear-gradient(135deg, #3B82F6, #1E40AF);
+    transition: all 0.3s ease;
+}
+
+.btn-blue-carbon:hover {
+    background: linear-gradient(135deg, #2563EB, #1D4ED8);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(59, 130, 246, 0.3);
+}
+
+/* Card hover effects */
+.card-hover {
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Progress bars */
+.progress-bar {
+    height: 8px;
+    background-color: #E5E7EB;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10B981, #059669);
+    transition: width 0.5s ease;
+}
+
+/* Status badges */
+.status-pending {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.status-active {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+.status-verified {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.status-suspended {
+    background-color: #FEE2E2;
+    color: #991B1B;
+}
+
+/* Loading spinner */
+.spinner {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3B82F6;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 640px) {
+    .container-mobile {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .text-mobile-lg {
+        font-size: 1.5rem;
+    }
+    
+    .grid-mobile-1 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* File upload area */
+.file-upload-area {
+    border: 2px dashed #CBD5E0;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.file-upload-area:hover {
+    border-color: #3B82F6;
+    background-color: #F7FAFC;
+}
+
+.file-upload-area.dragover {
+    border-color: #3B82F6;
+    background-color: #EBF8FF;
+}
+
+/* Map container */
+.map-container {
+    height: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #E2E8F0;
+}
+
+/* Form improvements */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-error {
+    color: #EF4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Success/Error messages */
+.alert {
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.alert-success {
+    background-color: #D1FAE5;
+    color: #065F46;
+    border: 1px solid #A7F3D0;
+}
+
+.alert-error {
+    background-color: #FEE2E2;
+    color: #991B1B;
+    border: 1px solid #FECACA;
+}
+
+.alert-warning {
+    background-color: #FEF3C7;
+    color: #92400E;
+    border: 1px solid #FDE68A;
+}
+
+.alert-info {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+    border: 1px solid #93C5FD;
+}
+
+/* Data visualization */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin: 1rem 0;
+}
+
+.metric-card {
+    text-align: center;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #1F2937;
+}
+
+.metric-label {
+    color: #6B7280;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+/* Timeline styles */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #E5E7EB;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.5rem;
+    top: 0.5rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    background: #3B82F6;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px #3B82F6;
+}
+
+/* Utility classes */
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.cursor-not-allowed {
+    cursor: not-allowed;
+}
+
+.select-none {
+    user-select: none;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .print-break {
+        page-break-before: always;
+    }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+    .dark-mode {
+        background-color: #1F2937;
+        color: #F9FAFB;
+    }
+    
+    .dark-mode .bg-white {
+        background-color: #374151;
+    }
+    
+    .dark-mode .text-gray-900 {
+        color: #F9FAFB;
+    }
+    
+    .dark-mode .text-gray-600 {
+        color: #D1D5DB;
+    }
+    
+    .dark-mode .border-gray-200 {
+        border-color: #4B5563;
+    }
+}
